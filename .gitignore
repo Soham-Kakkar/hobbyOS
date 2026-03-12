@@ -1,5 +1,6 @@
-bootloader/uefi/OVMF/*.fd
-bootloader/uefi/diskimg
+OVMF/*.4m.fd
+diskimg
+bootloader/uefi/*.git*
 *.EFI
 *.elf
 *.o
