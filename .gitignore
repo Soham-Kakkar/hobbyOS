@@ -1,0 +1,5 @@
+bootloader/uefi/OVMF/*.fd
+bootloader/uefi/diskimg
+*.EFI
+*.elf
+*.o
