@@ -9,6 +9,8 @@
 static EFI_SIMPLE_TEXT_IN_PROTOCOL *gIn;
 static EFI_SIMPLE_TEXT_OUT_PROTOCOL *gOut;
 EFI_BOOT_SERVICES *gBS;
+EFI_HANDLE gImageHandle;
+EFI_SYSTEM_TABLE *gST;
 
 EFI_GUID gEfiLoadedImageProtocolGuid = {0x5B1B31A1,0x9562,0x11d2,{0x8E,0x3F,0x00,0xA0,0xC9,0x69,0x72,0x3B}};
 EFI_GUID gEfiSimpleFileSystemProtocolGuid = {0x964e5b22,0x6459,0x11d2,{0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b}};
@@ -40,10 +42,7 @@ void *AllocatePool(UINTN size) {
     void *buf;
 
     status = gBS->AllocatePool(EfiLoaderData, size, &buf);
-    if (status != EFI_SUCCESS)
-        return NULL;
-
-    return buf;
+    return (status != EFI_SUCCESS) ? NULL : buf;
 }
 
 void *memset(void *dst, int v, UINTN n) {
@@ -61,6 +60,10 @@ void *memcpy(void *dst, const void *src, UINTN n) {
     return dst;
 }
 
+void *FreePool(void *buf) {
+    EFI_STATUS status = gBS->FreePool(buf);
+    return status == EFI_SUCCESS ? NULL : buf;
+}
 
 /* ===============================
    Input
@@ -140,14 +143,25 @@ INTN VSPrint(CHAR16 *str, UINTN size, CHAR16 *fmt, va_list args) {
     while (*fmt && count < size - 1) {
         if (*fmt == L'%') {
             fmt++;
+            int long_flag = 0;
+
+            if (*fmt == L'l') {
+                long_flag = 1;
+                fmt++;
+            }
+
             switch (*fmt) {
 
             case L'd': {
-                INTN val = va_arg(args, INTN);
+                INT64 val = long_flag ? va_arg(args, INT64) : va_arg(args, INTN);
                 CHAR16 tmp[32];
-                INTN i = 0, neg = 0;
+                INTN i = 0;
+                int neg = 0;
 
-                if (val < 0) { neg = 1; val = -val; }
+                if (val < 0) {
+                    neg = 1;
+                    val = -val;
+                }
 
                 if (val == 0)
                     tmp[i++] = L'0';
@@ -162,33 +176,12 @@ INTN VSPrint(CHAR16 *str, UINTN size, CHAR16 *fmt, va_list args) {
 
                 while (i > 0)
                     putc(tmp[--i]);
+
                 break;
             }
 
-            case L'x':
-            case L'X': {
-                UINTN val = va_arg(args, UINTN);
-                CHAR16 tmp[32];
-                INTN i = 0;
-
-                if (val == 0)
-                    tmp[i++] = L'0';
-                else
-                    while (val > 0) {
-                        UINTN digit = val % 16;
-                        tmp[i++] = (digit < 10) ? (L'0' + digit) : (L'A' + digit - 10);
-                        val /= 16;
-                    }
-
-                putc(L'0');
-                putc(L'x');
-
-                while (i > 0)
-                    putc(tmp[--i]);
-                break;
-            }
             case L'u': {
-                UINTN val = va_arg(args, UINTN);
+                UINT64 val = long_flag ? va_arg(args, UINT64) : va_arg(args, UINTN);
                 CHAR16 tmp[32];
                 INTN i = 0;
 
@@ -202,32 +195,62 @@ INTN VSPrint(CHAR16 *str, UINTN size, CHAR16 *fmt, va_list args) {
 
                 while (i > 0)
                     putc(tmp[--i]);
+
                 break;
             }
+
+            case L'x':
+            case L'X': {
+                UINT64 val = long_flag ? va_arg(args, UINT64) : va_arg(args, UINTN);
+                CHAR16 tmp[32];
+                INTN i = 0;
+
+                if (val == 0)
+                    tmp[i++] = L'0';
+                else
+                    while (val > 0) {
+                        UINTN digit = val % 16;
+
+                        if (digit < 10)
+                            tmp[i++] = L'0' + digit;
+                        else
+                            tmp[i++] = L'A' + digit - 10;
+
+                        val /= 16;
+                    }
+
+                putc(L'0');
+                putc(L'x');
+
+                while (i > 0)
+                    putc(tmp[--i]);
+
+                break;
+            }
+
             case L's': {
                 CHAR16 *s = va_arg(args, CHAR16 *);
-                while (*s) {
+                while (*s)
                     putc(*s++);
-                }
                 break;
             }
 
             case L'c':
-                  putc((CHAR16)va_arg(args, INTN));
+                putc((CHAR16)va_arg(args, INTN));
                 break;
 
             case L'%':
-                  putc(L'%');
+                putc(L'%');
                 break;
 
             default:
-                  putc(L'?');
+                putc(L'?');
                 break;
             }
+
             fmt++;
         } else {
-              putc(*fmt++);
-            count++;
+            putc(*fmt++);
         }
     }
 
@@ -279,13 +302,13 @@ EFI_STATUS read_file(EFI_FILE* file, void** buffer, UINTN* size) {
 
     *buffer = AllocatePool(*size);
     if (!*buffer) {
-        gBS->FreePool(info);
+        FreePool(info);
         return EFI_OUT_OF_RESOURCES;
     }
 
     file->Read(file, size, *buffer);
     
-    gBS->FreePool(info);
+    FreePool(info);
     return EFI_SUCCESS;
 }
 

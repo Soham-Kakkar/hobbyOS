@@ -20,6 +20,10 @@ extern EFI_GUID gEfiGraphicsOutputProtocolGuid;
 /* Global Boot Services */
 extern EFI_BOOT_SERVICES *gBS;
 
+/* Global reference to the image and system table */
+extern EFI_HANDLE gImageHandle;
+extern EFI_SYSTEM_TABLE *gST;
+
 /* ===============================
    Init Functions
    =============================== */
@@ -31,9 +35,8 @@ void InitializeLib(EFI_HANDLE image, EFI_SYSTEM_TABLE *st);
    =============================== */
 void* memset(void* dst, int v, UINTN n);
 void* memcpy(void* dst, const void* src, UINTN n);
-
-/* AllocatePool - wrapper for gBS->AllocatePool */
 void* AllocatePool(UINTN size);
+void* FreePool(void* buf);
 
 /* ===============================
    Input Functions
