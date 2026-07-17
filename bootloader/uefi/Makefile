@@ -19,6 +19,7 @@ all:
 		-Wl,/align:4096 \
 		*.c \
 		-o BOOTX64.EFI
+	mkdir -p diskimg/EFI/BOOT/
 	cp BOOTX64.EFI diskimg/EFI/BOOT/BOOTX64.EFI
 
 run:

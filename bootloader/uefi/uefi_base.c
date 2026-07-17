@@ -29,7 +29,9 @@ void uefi_init(EFI_SYSTEM_TABLE *SystemTable) {
 }
 
 void InitializeLib(EFI_HANDLE image, EFI_SYSTEM_TABLE *st) {
-    uefi_init(st);
+    gImageHandle = image;
+    gST = st;
+    uefi_init(gST);
 }
 
 
@@ -42,7 +44,13 @@ void *AllocatePool(UINTN size) {
     void *buf;
 
     status = gBS->AllocatePool(EfiLoaderData, size, &buf);
-    return (status != EFI_SUCCESS) ? NULL : buf;
+
+    if (status != EFI_SUCCESS || !buf) {
+        Print(L"Memory allocation failed: %x\r\n", status);
+        return NULL;
+    }
+
+    return buf;
 }
 
 void *memset(void *dst, int v, UINTN n) {
@@ -230,6 +238,7 @@ INTN VSPrint(CHAR16 *str, UINTN size, CHAR16 *fmt, va_list args) {
 
             case L's': {
                 CHAR16 *s = va_arg(args, CHAR16 *);
+                if (!s) s = L"(null)";
                 while (*s)
                     putc(*s++);
                 break;
@@ -296,7 +305,7 @@ EFI_STATUS read_file(EFI_FILE* file, void** buffer, UINTN* size) {
     info = AllocatePool(info_size);
     if (!info) return EFI_OUT_OF_RESOURCES;
 
-    file->GetInfo(file, &gEfiFileInfoGuid, &info_size, info);
+    if (file->GetInfo(file, &gEfiFileInfoGuid, &info_size, info) != EFI_SUCCESS) return EFI_LOAD_ERROR;
 
     *size = info->FileSize;
 
@@ -306,7 +315,7 @@ EFI_STATUS read_file(EFI_FILE* file, void** buffer, UINTN* size) {
         return EFI_OUT_OF_RESOURCES;
     }
 
-    file->Read(file, size, *buffer);
+    if (file->Read(file, size, *buffer) != EFI_SUCCESS) return EFI_LOAD_ERROR;
     
     FreePool(info);
     return EFI_SUCCESS;

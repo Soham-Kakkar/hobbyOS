@@ -10,9 +10,7 @@ CHAR16 input[INPUT_MAX];
    =============================== */
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE* st) {
-    gImageHandle = image;
-    gST = st;
-    InitializeLib(gImageHandle, gST);
+    InitializeLib(image, st);
 
     clear();
 
