@@ -83,6 +83,15 @@ void _start(BootInfo* info) {
 
     print("MEMORY MAP OK\n", 0x00FF00);
 
+    print(" _           _     _            ___  ____         \n", 0x00FFFF);
+    print("| |__   ___ | |__ | |__  _   _ / _ \\/ ___|       \n", 0x00FFFF);
+    print("|  _ \\ / _ \\| '_ \\| '_ \\| | | | | | \\___ \\  \n", 0x00FFFF);
+    print("| | | | (_) | |_) | |_) | |_| | |_| |___) |       \n", 0x00FFFF);
+    print("|_| |_|\\___/|_.__/|_.__/ \\__, |\\___/|____/     \n", 0x00FFFF);
+    print("                          |___|                   \n\n", 0x00FFFF);
+
+    print("Welcome to HobbyOS kernel.\n", 0x00FFFF);
+
     while (1)
         __asm__ volatile ("hlt");
 }
