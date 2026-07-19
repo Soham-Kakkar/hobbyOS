@@ -13,6 +13,12 @@
 
 ---
 
+<p align="center">
+  <img src="./screenshots/HobShell.png" alt="hobbyOS kernel rendering to the framebuffer" width="85%">
+</p>
+
+---
+
 HobShell boots straight into a `boot>` prompt where you can explore the firmware
 environment: browse the boot volume, dump the UEFI memory map, and inspect the
 graphics output protocol. It's a small, freestanding UEFI application — a handy

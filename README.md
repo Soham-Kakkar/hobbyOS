@@ -14,6 +14,11 @@
 
 ---
 
+<p align="center">
+  <img src="./kernel/screenshots/kernel.png" alt="hobbyOS kernel rendering to the framebuffer" width="85%">
+</p>
+
+---
 hobbyOS is a small operating system built for learning the full boot path: a
 UEFI bootloader loads an ELF64 kernel, hands over a boot-information structure,
 and jumps into a kernel that renders text over the graphics framebuffer.
