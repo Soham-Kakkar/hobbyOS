@@ -3,7 +3,7 @@ all: kernel uefiboot
 kernel:
 	$(MAKE) -C kernel
 uefiboot:
-	$(MAKE) -C bootloader/uefi
+	$(MAKE) -C bootloader/uefi WITH_LOADKERNEL=1
 uefirun:
 	$(MAKE) -C bootloader/uefi run
 clean:

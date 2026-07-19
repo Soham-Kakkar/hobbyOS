@@ -93,14 +93,30 @@ drops you at the `boot>` prompt.
 > `/usr/share/edk2/ovmf` on Fedora — and files may be named `OVMF_CODE_4M.fd`.
 > `OVMF_CODE` is read-only; keep a **per-project writable copy** of `OVMF_VARS`.
 
-## Project layout
+## How it works
 
-```text
-uefi.c          efi_main + REPL loop
-uefi_base.c/.h  init, memory, input (readline), VSPrint, files, memory map
-shell_helper.c  commands, dispatcher, and the command table
-Makefile        build (clang -> PE) and run (qemu + OVMF)
+Two layers sit on top of the firmware:
+
+- a **freestanding UEFI runtime** — memory helpers, a `readline` line editor,
+  and a small `printf`-style formatter, with no libc linked in; and
+- the **shell** — a REPL that splits each line, matches the first word against
+  a command table, and dispatches to its handler.
+
+Commands are decoupled from the core, so adding one is just a handler plus a
+row in the table — and `help` reflects whatever is registered.
+
+## One binary, two roles
+
+A single build flag decides what HobShell *is*:
+
+```sh
+make                     # standalone UEFI shell (default)
+make WITH_LOADKERNEL=1   # + `load`: an ELF64 kernel loader with a boot handoff
 ```
+
+With `WITH_LOADKERNEL=1`, the `load` command and its boot protocol compile in —
+that's how [hobbyOS](https://github.com/Soham-Kakkar/hobbyOS) reuses the shell
+as its kernel bootloader (it supplies the boot-protocol header the loader needs).
 
 ## Related
 

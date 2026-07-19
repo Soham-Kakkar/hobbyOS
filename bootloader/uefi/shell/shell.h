@@ -3,8 +3,9 @@
 #ifndef SHELL_HELPER_H
 #define SHELL_HELPER_H
 
-#include "uefi_base.h"
-#include "../../common/bootinfo.h"
+#include "../uefi_base/uefi_base.h"
+#include "helpers.h"
+#include "commands/commands.h"
 
 /* ===============================
    Command Table
@@ -24,5 +25,11 @@ extern SHELL_COMMAND command_table[];
    Command Dispatcher
    =============================== */
 void execute_command(CHAR16* line);
+
+
+/* ===============================
+   Shell
+   =============================== */
+void shell_init(void);
 
 #endif // SHELL_HELPER_H

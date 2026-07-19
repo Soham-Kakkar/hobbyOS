@@ -1,10 +1,24 @@
 .PHONY: all run clean
 
-COMMON_DIR := ../../common
+COMMON_DIR  := ../../common
 EFI_INCLUDE := /usr/include/efi
 
-all:
-	clang \
+# Optional OS-specific kernel loader.
+#   make WITH_LOADKERNEL=1    -> shell + `load` (hobbyOS)
+#   make 						   				-> pure UEFI shell, no kernel/BootInfo coupling
+WITH_LOADKERNEL ?= 0
+
+# All C sources, discovered recursively so new files need no Makefile edits.
+SRCS := $(shell find . -name '*.c')
+
+ifeq ($(WITH_LOADKERNEL),1)
+    DEFINES := -DWITH_LOADKERNEL
+else
+    SRCS := $(filter-out ./shell/commands/cmd_loadkernel.c,$(SRCS))
+    DEFINES :=
+endif
+
+CFLAGS := \
 		-target x86_64-windows-gnu \
 		-ffreestanding \
 		-fshort-wchar \
@@ -14,11 +28,15 @@ all:
 		-fuse-ld=lld \
 		-I$(EFI_INCLUDE) \
 		-I$(COMMON_DIR) \
+		$(DEFINES)
+
+LDFLAGS := \
 		-Wl,/subsystem:efi_application \
 		-Wl,/entry:efi_main \
-		-Wl,/align:4096 \
-		*.c \
-		-o BOOTX64.EFI
+		-Wl,/align:4096
+
+all:
+	clang $(CFLAGS) $(LDFLAGS) $(SRCS) -o BOOTX64.EFI
 	mkdir -p diskimg/EFI/BOOT/
 	cp BOOTX64.EFI diskimg/EFI/BOOT/BOOTX64.EFI
 

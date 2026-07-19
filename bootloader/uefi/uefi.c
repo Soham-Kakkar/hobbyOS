@@ -1,9 +1,5 @@
-#include "uefi_base.h"
-#include "shell_helper.h"
-
-#define INPUT_MAX 128
-
-CHAR16 input[INPUT_MAX];
+#include "uefi_base/uefi_base.h"
+#include "shell/shell.h"
 
 /* ===============================
    Main Loop
@@ -23,17 +19,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE* st) {
     Print(L"Welcome to HobbyOS bootloader shell.\r\n");
     Print(L"Type 'help' for a list of commands.\r\n\r\n");
 
-    while (1) {
-
-        Print(L"boot>");
-
-        int len = readline(input, INPUT_MAX);
-
-        if (len <= 0)
-            continue;
-
-        execute_command(input);
-    }
+    shell_init();
 
     return EFI_SUCCESS;
 }

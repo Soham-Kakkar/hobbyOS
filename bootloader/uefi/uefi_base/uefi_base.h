@@ -3,11 +3,9 @@
 #ifndef UEFI_BASE_H
 #define UEFI_BASE_H
 
-
+#include <stdarg.h>
 #include <stdint.h>
 #include <efi.h>
-
-#define KERNEL_PATH L"kernel.elf"
 
 #define PAGE_SIZE 4096
 
@@ -23,6 +21,10 @@ extern EFI_BOOT_SERVICES *gBS;
 /* Global reference to the image and system table */
 extern EFI_HANDLE gImageHandle;
 extern EFI_SYSTEM_TABLE *gST;
+
+/* Global input and output protocols */
+extern EFI_SIMPLE_TEXT_IN_PROTOCOL *gIn;
+extern EFI_SIMPLE_TEXT_OUT_PROTOCOL *gOut;
 
 /* ===============================
    Init Functions
