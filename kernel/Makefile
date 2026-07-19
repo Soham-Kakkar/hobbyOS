@@ -14,12 +14,13 @@ CFLAGS = \
 	-fno-stack-protector \
 	-fno-builtin \
 	-mno-red-zone \
-	-fPIE \
+	-fno-pic \
+	-fno-pie \
 	-nostdlib \
 	-Wall -Wextra \
 	-g
 
-LDFLAGS = -nostdlib -pie -T $(LINKER)
+LDFLAGS = -nostdlib -no-pie -T $(LINKER)
 
 SRCS := kernel.c basic_font_bitmap.c
 OBJS := $(SRCS:.c=.o)

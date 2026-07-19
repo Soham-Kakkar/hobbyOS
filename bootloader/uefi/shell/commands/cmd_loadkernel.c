@@ -65,20 +65,20 @@ void cmd_loadkernel(CHAR16* args) {
     UINTN pages = (total_size + 0xFFF) / 0x1000;
 
     /* ===============================
-     * Allocate contiguous kernel memory
+     * Allocate kernel memory at its fixed link address
      * =============================== */
 
-    UINT64 kernel_base = 0;
+    UINT64 kernel_base = min_vaddr;
 
     EFI_STATUS status = gBS->AllocatePages(
-        AllocateAnyPages,
+        AllocateAddress,
         EfiLoaderData,
         pages,
         &kernel_base
     );
 
     if (status != EFI_SUCCESS) {
-        Print(L"[loader] kernel memory allocation failed\r\n");
+        Print(L"[loader] kernel alloc at %lx failed: %x\r\n", min_vaddr, status);
         for (;;) __asm__("hlt");
     }
 

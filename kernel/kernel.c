@@ -64,8 +64,7 @@ void print(const char* str, uint32_t color) {
 
 __attribute__((noreturn))
 void _start(BootInfo* info) {
-    *(volatile uint32_t*)0x80000000 = 0xDEADBEEF;
-
+  
     bootinfo = info;
     
     if (!bootinfo || !bootinfo->framebuffer) {
